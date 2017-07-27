@@ -23,11 +23,20 @@ module.exports = function(io){
         // If the user doesn't exist, then create the user
         var name = req.body.name;
         var text = req.body.text;
+        var backURL=req.header('Referer') || '/';
         // result should be {name: username, id: tweetId, content: tweetContent}
         db.add(name, text, function(err, result){
             if(err) next(err);
+
+            // Having io.sockets.emit is only so that other client can see it
+            // w/o reloading the page. Yourself should still be redirected.
+            // Otherwise, your browser will always trying to  go to the form
+            // submission url /tweets
             io.sockets.emit('newTweet', result);
+            // console.log('posted');
+            res.redirect(backURL || '/');
         });
+        // res.end();
      });
 
     // router.post('/tweets', function(req, res) {

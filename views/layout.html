@@ -90,12 +90,12 @@
       });
       // When 'new_tweet' events are fired, do something with the packaged tweet
       socket.on('newTweet', function (tweet) {
-        // console.log(tweet);
+        console.log(tweet);
         var elem = document.getElementById('tweetSection');
         var newLi = document.createElement("li");
         var str = ("<a href='/users/" + tweet.name + "'>" + tweet.name + "</a> - " +
                    '<a href="/tweets/' + tweet.id + '">' +
-                   " - " + tweet.content + '</a>');
+                  tweet.content + '</a>');
         newLi.innerHTML = str;
         elem.appendChild(newLi);
         document.getElementById('text_field').value = '';
