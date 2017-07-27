@@ -40,6 +40,15 @@ module.exports = function(io){
     //  // res.redirect('/');
     // });
 
+    router.get('/users/:name', function(req, res, next){
+        var name = req.param.name;
+        // result should be a list of {name: username, id: tweetId, content: tweetContent}
+        db.findTweetByName(name, function(err, result){
+            if (err) next(err);
+            res.render('index', {tweets: result, showForm: true, userName: name});
+        });
+    });
+
     // router.get('/users/:name', function(req, res) {
     //  var name = req.params.name;
     //  var list = tweetBank.find( {name: name} );

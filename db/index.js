@@ -6,42 +6,50 @@ client.connect(function(err){
 });
 
 function query(sql, params, cb){
-    client.query(sql, params, function(err, result){
-        if(err) return cb(err);
+    client.query(sql, params, cb);
+}
+
+// Should return a list of {name: username, id: tweetId, content: tweetContent}
+function findTweetByName(userName, cb){
+    var sql = `select users.name, tweets.id, tweets.content from users join tweets on users.id = tweets.user_id
+                where users.name = $1;`;
+    query(sql, [userName], function(err, result){
+        if (err) return cb(err);
         cb(null, result.rows);
     });
+
 }
 
 // Find user ID by name.
 // This assumes all user names are unique
 function findUserIdByName(name, cb){
     var sql = ``;
-    query(sql, [name], function(err, rows){
-        if(err) return cb(err);
+    query(sql, [name], function(err, result){
+        if (err) return cb(err);
         // If successful, I should get either 0 rows which means user doesn't exist,
         // or at least one row.
-        if(rows.length > 0) return cb(null, rows[0].id);
+        if (rows.length > 0) return cb(null, result.rows[0].id);
         else return false; // False indicating user doesn't exist
     });
 }
 
 // addUser name should also return userId created
 function addUser(name, cb){
-    var sql = ``;
-    query(sql, [name], function(err, rows){
+    var sql = `INSERT INTO users (name) VALUES ($1) RETURNING id`;
+    query(sql, [name], function(err, result){
         // The callback uses rows because we use the generic query method
         // where it only returns the 'rows' array
-        if(err) return cb(err);
-        cb(null, rows[0].id);
+        if (err) return cb(err);
+        cb(null, result.rows[0].id);
     });
 }
 
 // addTweet should return the tweet ID in the cb
 function addTweet(userId, tweetContent, cb){
-    var sql = ``;
-    query(sql, [userId, tweetContent], function(err, rows){
-        if(err) return cb(err);
-        cb(null, rows[0].id);
+    var sql = `INSERT INTO tweets (user_id, content) VALUES ($1, $2) RETURNING id`;
+    query(sql, [userId, tweetContent], function(err, result){
+        if (err) return cb(err);
+        cb(null, result.rows[0].id);
     });
 
 }
@@ -49,29 +57,27 @@ function addTweet(userId, tweetContent, cb){
 // result should be {name: username, id: tweetId, content: tweetContent}
 function add(userName, tweetContent, cb){
     // Check if user exist, if so get user ID. If not, add the user and get ID
-    db.findUserIdByName(userName, function(err, userId){
-        if(err) return cb(err);
-        if(userId){
+    findUserIdByName(userName, function(err, userId){
+        if (err) return cb(err);
+        if (userId){
             // Add tweet
             addTweet(userId, tweetContent, function(err, tweetId){
-                if(err) return cb(err);
-                cb(null, {'name': userName, 'id': tweetId, 'content': tweetContent});
+                if (err) return cb(err);
+                cb(null, { name: userName, id: tweetId, content: tweetContent});
             });
         }
-        else{
+        else {
             // Add user
             addUser(userName, function(err, userId){
-                if(err) return cb(err);
+                if (err) return cb(err);
                 // Now that we added the user, and got the ID, add the tweet
                 addTweet(userId, tweetContent, function(err, tweetId){
-                    if(err) return cb(err);
-                    cb(null, {'name': userName, 'id': tweetId, 'content': tweetContent});
+                    if (err) return cb(err);
+                    cb(null, {name: userName, id: tweetId, content: tweetContent});
                 });
             });
         }
     });
-
-
 }
 
 function sync(cb){
@@ -132,5 +138,6 @@ module.exports = {
     query,
     add,
     sync,
-    seed
+    seed,
+    findTweetByName
 };
