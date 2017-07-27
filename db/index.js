@@ -1,35 +1,52 @@
 const pg = require('pg');
 const client = new pg.Client(process.env.DATABASE_URL);
+// const client = new pg.Client('postgres://localhost/twitterdb')
 
 client.connect(function(err){
     if(err) console.log(err.message);
 });
 
 function query(sql, params, cb){
+    // console.log(`SQL is ${sql}`)
+    // console.log(`Params is ` + params)
     client.query(sql, params, cb);
+}
+
+
+// Should return a list of {name: username, id: tweetId, content: tweetContent}
+function findTweetById(tweetId, cb){
+    var sql = `select users.name, tweets.id, tweets.content from users join tweets on users.id = tweets.user_id
+                where tweets.id = $1;`;
+    query(sql, [tweetId], cb);
+
 }
 
 // Should return a list of {name: username, id: tweetId, content: tweetContent}
 function findTweetByName(userName, cb){
     var sql = `select users.name, tweets.id, tweets.content from users join tweets on users.id = tweets.user_id
                 where users.name = $1;`;
-    query(sql, [userName], function(err, result){
-        if (err) return cb(err);
-        cb(null, result.rows);
-    });
+
+    query(sql, [userName], cb);
 
 }
 
 // Find user ID by name.
 // This assumes all user names are unique
 function findUserIdByName(name, cb){
-    var sql = ``;
+    // console.log("In findUserIdByName")
+    var sql = `SELECT * FROM users WHERE name = $1`;
     query(sql, [name], function(err, result){
         if (err) return cb(err);
         // If successful, I should get either 0 rows which means user doesn't exist,
         // or at least one row.
-        if (rows.length > 0) return cb(null, result.rows[0].id);
-        else return false; // False indicating user doesn't exist
+        if (result.rows.length > 0) {
+            // console.log("Found the ID");
+            cb(null, result.rows[0].id);
+        }
+        else {
+            // console.log("Returning false here")
+            cb(null, false); // False indicating user doesn't exist
+        }
     });
 }
 
@@ -56,10 +73,12 @@ function addTweet(userId, tweetContent, cb){
 
 // result should be {name: username, id: tweetId, content: tweetContent}
 function add(userName, tweetContent, cb){
+    // console.log("add is called")
     // Check if user exist, if so get user ID. If not, add the user and get ID
     findUserIdByName(userName, function(err, userId){
         if (err) return cb(err);
         if (userId){
+            // console.log("Just need to addTweet");
             // Add tweet
             addTweet(userId, tweetContent, function(err, tweetId){
                 if (err) return cb(err);
@@ -67,6 +86,7 @@ function add(userName, tweetContent, cb){
             });
         }
         else {
+            // console.log("Need to addUser")
             // Add user
             addUser(userName, function(err, userId){
                 if (err) return cb(err);
@@ -139,5 +159,24 @@ module.exports = {
     add,
     sync,
     seed,
-    findTweetByName
+    findTweetByName,
+    findTweetById
 };
+
+
+// Test code
+///////////////////////////////////////////////
+// add('Han Gu', 'Hi I am Han', function(err, result){
+//     return console.log(`result is ${result}`);
+// });
+
+// findUserIdByName("Tom Hanks", function(err, result){
+//     return console.log(`result is ${result}`);
+// })
+
+// var sql = `select * from users where name = $1`;
+// var params = "Tom Hanks";
+// query(sql, [params], function(err, result){
+//     if (err) return console.log(err.message);
+//     console.log(result.rows);
+// })

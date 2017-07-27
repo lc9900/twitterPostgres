@@ -31,12 +31,12 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use('/', routes(io));
 app.use('/', express.static(path.join(__dirname, 'public')));
 
-var example_dict =  {title: 'An Example',
-    people: [
-        { name: 'Gandalf'},
-        { name: 'Frodo' },
-        { name: 'Hermione'}
-    ]}
+// var example_dict =  {title: 'An Example',
+//     people: [
+//         { name: 'Gandalf'},
+//         { name: 'Frodo' },
+//         { name: 'Hermione'}
+//     ]}
 
 
 

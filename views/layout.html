@@ -98,6 +98,9 @@
                    " - " + tweet.content + '</a>');
         newLi.innerHTML = str;
         elem.appendChild(newLi);
+        document.getElementById('text_field').value = '';
+        document.getElementById('text_field').blur();
+        document.getElementById('text_field').focus();
         // alert('Refreshing... check the console...');
         // some logic to add the new tweet to the DOM…
       });

@@ -26,7 +26,7 @@ module.exports = function(io){
         // result should be {name: username, id: tweetId, content: tweetContent}
         db.add(name, text, function(err, result){
             if(err) next(err);
-            io.socket.emit('newTweet', result);
+            io.sockets.emit('newTweet', result);
         });
      });
 
@@ -41,11 +41,11 @@ module.exports = function(io){
     // });
 
     router.get('/users/:name', function(req, res, next){
-        var name = req.param.name;
+        var name = req.params.name;
         // result should be a list of {name: username, id: tweetId, content: tweetContent}
         db.findTweetByName(name, function(err, result){
             if (err) next(err);
-            res.render('index', {tweets: result, showForm: true, userName: name});
+            res.render('index', {tweets: result.rows, showForm: true, userName: name});
         });
     });
 
@@ -56,6 +56,13 @@ module.exports = function(io){
 
     // });
 
+    router.get('/tweets/:id', function(req, res, next){
+        var id = parseInt(req.params.id);
+        db.findTweetById(id, function(err, result){
+            if (err) next(err);
+            res.render( 'index', { tweets: result.rows } );
+        });
+    });
     // router.get('/tweets/:id', function(req, res) {
     //  var id = parseInt(req.params.id);
     //  var list = tweetBank.find( {id: id} );
