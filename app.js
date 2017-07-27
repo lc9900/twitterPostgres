@@ -11,7 +11,8 @@ app.set('view engine', 'html');
 app.engine('html', nunjucks.render);
 nunjucks.configure('views', {noCache: true});
 
-var server = app.listen(3000, function(){
+var port = process.env.PORT || 3000;
+var server = app.listen(port, function(){
 		console.log("server listening")
         db.sync(function(err){
             if(err) return console.log(err.message);
