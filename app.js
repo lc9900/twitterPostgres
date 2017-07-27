@@ -31,6 +31,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 app.use('/', routes(io));
 app.use('/', express.static(path.join(__dirname, 'public')));
+app.use('/vendor', express.static(path.join(__dirname, 'node_modules')));
 
 // var example_dict =  {title: 'An Example',
 //     people: [
